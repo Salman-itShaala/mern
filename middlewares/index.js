@@ -76,7 +76,6 @@ app.post("/save-todo", async (req, res) => {
     // id if user exists or not
     // bad req
 
-
     try {
         const todo = new Todo({ title, description, userId });
 
@@ -90,7 +89,77 @@ app.post("/save-todo", async (req, res) => {
     }
 
 
-})
+});
+
+// assignment
+
+// userId
+
+app.get("/todos", async (req, res) => {
+    const userId = req.body.userId;
+
+    if (!userId) {
+        res.status(400).json({ message: "User id is required" });
+        return;
+    }
+
+    try {
+
+        const todos = await Todo.find({ userId });
+
+        res.status(200).json({ message: "Todo fetched successfully", todos });
+    } catch (error) {
+        console.log("Error in get todos route", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+// userId
+
+app.delete("/todo/:id", async (req, res) => {
+    const id = req.params.id;
+    const userId = req.body.userId;
+
+    if (!id || !userId) {
+        res.status(400).json({ message: "All fields are required" })
+        return;
+    }
+
+    try {
+
+        await Todo.deleteOne({ _id: id, userId: userId });
+
+        res.status(200).json({ message: "Todo deleted succesfully" });
+
+    } catch (error) {
+        console.log("Error in delete route", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+app.put("/todo/:id", async (req, res) => {
+    const id = req.params.id;
+    const userId = req.body.userId;
+    const newTitle = req.body.title;
+    const newDescription = req.body.description;
+
+    if (!id || !userId || !newTitle || !newDescription) {
+        res.status(400).json({ message: "All fields are required" })
+        return;
+    }
+
+    try {
+
+        const updatedTodo = await Todo.updateOne({ _id: id, userId: userId }, { title: newTitle, description: newDescription });
+
+        res.status(201).json({ message: "Todo updated succesfully" });
+
+
+    } catch (error) {
+        console.log("Error in delete route", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 
 app.listen(3000, () => {
