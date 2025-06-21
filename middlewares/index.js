@@ -1,8 +1,12 @@
 import express from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { connect } from "mongoose";
 import { Todo, User } from "./db.js";
 
 const dbUrl = "mongodb+srv://salmanshaikh:n72L9oN54khi0vBJ@cluster0.oqtuyuo.mongodb.net/todo-app";
+
+const jwtSecret = "My-JWT-S3Cr37";
 
 await connect(dbUrl);
 
@@ -23,11 +27,18 @@ app.post("/signup", async (req, res) => {
     }
 
     try {
-        const user = new User({ userName, email, password });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = new User({ userName, email, password: hashedPassword });
 
         const savedUser = await user.save();
 
-        res.status(201).send({ message: "User saved succesfully", savedUser });
+        const userId = savedUser._id;
+
+        const token = jwt.sign({ id: userId }, jwtSecret, { expiresIn: "1h" });
+
+        res.status(201).send({ message: "User saved succesfully", user: { token: token, userName: savedUser.userName } });
 
     } catch (error) {
         console.log("Error occured in signup route", error);
@@ -35,7 +46,6 @@ app.post("/signup", async (req, res) => {
     }
 
 })
-
 
 app.post("/login", async (req, res) => {
     const email = req.body.email;
@@ -46,14 +56,27 @@ app.post("/login", async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ email, password });
+
+        const user = await User.findOne({ email });
 
         if (!user) {
             res.status(404).json({ message: "Invalid credentials" });
             return;
         }
 
-        res.status(200).json({ message: "login successfull", user });
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+        if (isPasswordCorrect) {
+
+            const userId = user._id;
+
+            const token = jwt.sign({ id: userId }, jwtSecret, { expiresIn: "1h" });
+
+            res.status(200).json({ message: "login successfull", user: { token: token, userName: user.userName } });
+        } else {
+            res.status(404).json({ message: "Invalid credentials" });
+        }
+
 
     } catch (error) {
         console.log("Error in login route", error);
@@ -61,10 +84,28 @@ app.post("/login", async (req, res) => {
     }
 })
 
+
+// middleware
+
+function authMiddleware(req, res, next) {
+    const token = req.headers.token;
+
+    const user = jwt.verify(token, jwtSecret); // {id}
+
+    const userId = user.id;
+
+    // userId 
+
+    req.userId = userId;
+
+    next();
+
+}
+
 // route to save todo
 
-app.post("/save-todo", async (req, res) => {
-    const userId = req.body.userId;
+app.post("/save-todo", authMiddleware, async (req, res) => {
+    const userId = req.userId;
     const title = req.body.title;
     const description = req.body.description;
 
@@ -95,8 +136,9 @@ app.post("/save-todo", async (req, res) => {
 
 // userId
 
-app.get("/todos", async (req, res) => {
-    const userId = req.body.userId;
+app.get("/todos", authMiddleware, async (req, res) => {
+
+    const userId = req.userId;
 
     if (!userId) {
         res.status(400).json({ message: "User id is required" });
@@ -116,9 +158,9 @@ app.get("/todos", async (req, res) => {
 
 // userId
 
-app.delete("/todo/:id", async (req, res) => {
+app.delete("/todo/:id", authMiddleware, async (req, res) => {
     const id = req.params.id;
-    const userId = req.body.userId;
+    const userId = req.userId;
 
     if (!id || !userId) {
         res.status(400).json({ message: "All fields are required" })
@@ -137,9 +179,9 @@ app.delete("/todo/:id", async (req, res) => {
     }
 });
 
-app.put("/todo/:id", async (req, res) => {
+app.put("/todo/:id", authMiddleware, async (req, res) => {
     const id = req.params.id;
-    const userId = req.body.userId;
+    const userId = req.userId;
     const newTitle = req.body.title;
     const newDescription = req.body.description;
 
