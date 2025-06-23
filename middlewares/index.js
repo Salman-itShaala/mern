@@ -1,16 +1,21 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { config } from "dotenv";
 import { connect } from "mongoose";
 import { Todo, User } from "./db.js";
 
-const dbUrl = "mongodb+srv://salmanshaikh:n72L9oN54khi0vBJ@cluster0.oqtuyuo.mongodb.net/todo-app";
-
-const jwtSecret = "My-JWT-S3Cr37";
+config();
 
 await connect(dbUrl);
 
 const app = express();
+
+
+const dbUrl = process.env.MONGODB_URL;
+
+const jwtSecret = process.env.JWT_SECRET;
+
 
 app.use(express.json());
 
@@ -90,7 +95,11 @@ app.post("/login", async (req, res) => {
 function authMiddleware(req, res, next) {
     const token = req.headers.token;
 
+    //
+
     const user = jwt.verify(token, jwtSecret); // {id}
+
+    //
 
     const userId = user.id;
 
