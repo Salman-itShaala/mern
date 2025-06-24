@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { handleGetReq, handleLoginReq, handleSignupReq, } from "../controllers/user-controllers.js";
+import { handleGetReq, login, signup } from "../controllers/user-controllers.js";
 
 const userRouter = Router();
 
-userRouter.get("/", handleGetReq);
-userRouter.get("/login", handleLoginReq);
-userRouter.get("/signup", handleSignupReq);
+
+userRouter.post("/signup", signup);
+
+userRouter.post("/login", login);
+
+userRouter.get("/", handleGetReq)
 
 export default userRouter;
