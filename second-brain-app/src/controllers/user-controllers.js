@@ -46,9 +46,37 @@ export async function signup(req, res) {
 
 
 export async function login(req, res) {
+    const body = req.body;
 
-}
+    const email = body.email;
+    const password = body.password;
 
-export async function handleGetReq(req, res) {
-    res.status(200).json({ userName: "salman", email: "salman@gmail.com" })
+    if (!email || !password) {
+        res.json(400).json({ message: "Required all fields" });
+        return;
+    }
+
+    try {
+        const user = await User.findOne({ email: email });
+
+        if (!user) {
+            res.status(403).json({ message: "Invalid Credentials" });
+            return;
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+        if (isPasswordCorrect) {
+            // generate jwt token and send it to front end
+            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+            res.status(200).json({ message: "Login succesfull", token });
+        } else {
+            res.status(403).json({ message: "Invalid Credentials" });
+            return;
+        }
+    } catch (error) {
+        console.log("Error in login route", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
 }

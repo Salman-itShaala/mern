@@ -1,7 +1,4 @@
 import { connect } from "mongoose";
-import { config } from "dotenv";
-
-config();
 
 async function connectToMongo() {
     try {

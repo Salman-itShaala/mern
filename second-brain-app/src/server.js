@@ -2,9 +2,13 @@ import express from "express";
 import connectToMongo from "./config/db.js";
 import router from "./routes/index.js";
 import cors from "cors";
+import { config } from "dotenv";
+
 const app = express();
 
 connectToMongo();
+config();
+
 
 app.use(cors());
 app.use(express.json());
