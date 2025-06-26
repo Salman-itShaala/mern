@@ -6,8 +6,8 @@ import { config } from "dotenv";
 
 const app = express();
 
-connectToMongo();
 config();
+connectToMongo();
 
 
 app.use(cors());

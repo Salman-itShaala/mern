@@ -4,20 +4,32 @@ import jwt from "jsonwebtoken";
 import { config } from "dotenv";
 import { connect } from "mongoose";
 import { Todo, User } from "./db.js";
+import { rateLimit } from 'express-rate-limit'
 
 config();
 
-await connect(dbUrl);
 
 const app = express();
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+    standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+    // store: ... , // Redis, Memcached, etc. See below.
+})
 
 
 const dbUrl = process.env.MONGODB_URL;
 
 const jwtSecret = process.env.JWT_SECRET;
 
+await connect(dbUrl);
+
 
 app.use(express.json());
+
+app.use(limiter)
 
 app.post("/signup", async (req, res) => {
     const userName = req.body.userName; // {userName : "", email : "", password : ""} 
@@ -110,6 +122,8 @@ function authMiddleware(req, res, next) {
     next();
 
 }
+
+
 
 // route to save todo
 

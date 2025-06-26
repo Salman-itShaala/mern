@@ -7,14 +7,36 @@ connect("mongodb+srv://salmanshaikh:n72L9oN54khi0vBJ@cluster0.oqtuyuo.mongodb.ne
 
 const studentsSchema = new Schema({
     studentsName: String,
-    age: Number
+    age: Number,
+    adhaarCard: {
+        adhaarNo: Number,
+        address: String
+    }
 });
 
+const s = new Schema({
+    name: String,
+    age: Number
+})
 
-const Student = model("Student", studentsSchema);
+
+
+const Student = model("Student", studentsSchema); // students
+
+
+const coursesSchema = new Schema({
+    title: String,
+    price: Number,
+    tutor: String,
+    discound: Number
+})
+
+
+const Course = model("Course", coursesSchema);
+
 
 async function insertStudent() {
-    const student = new Student({ studentsName: "Ram", age: 20 });
+    const student = new Student({ studentsName: "Ram", age: 2 });
 
     const savedStudent = await student.save();
 

@@ -1,0 +1,21 @@
+📁 src/
+├── 📁 controllers/
+  ├── 📄 books.controllers.js
+  ├── 📄 borrow.controllers.js
+  └── 📄 user.controllers.js
+├── 📁 routes/
+  ├── 📄 books.routes.js
+  ├── 📄 borrow.routes.js
+  ├── 📄 index.js
+  └── 📄 user.routes.js
+├── 📁 services/
+  ├── 📄 books.services.js
+  ├── 📄 borrow.services.js
+  └── 📄 user.services.js
+├── 📁 helpers/
+  ├── 📄 borrow.helpers.js
+  └── 📄 user.helpers.js
+├── 📁 middleware/
+  └── 📄 user.middleware.js
+├── 📁 utils/
+└── 📄 server.js

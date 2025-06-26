@@ -2,7 +2,9 @@ import express from "express";
 
 const app = express(); // http server 
 
+// body (json) --> normal js obj
 app.use(express.json());
+
 
 const todos = [
     { id: 1, title: "excercise daily" },
